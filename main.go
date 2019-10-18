@@ -15,9 +15,13 @@ type Args struct {
 	PKCSPassword string
 }
 
+func init() {
+	log.SetOutput(os.Stdout)
+	log.SetLevel(log.InfoLevel)
+}
+
 func main() {
 
-	log.SetOutput(os.Stdout)
 	var args = Args{}
 
 	flag.StringVar(&args.SourceFile, "source", "acme.json", "The JSON source produced by Traefik")
@@ -36,6 +40,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	listen(args.SourceFile)
+	done := make(chan bool, 1)
+	listen(args.SourceFile, done)
+	<-done
 
 }

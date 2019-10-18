@@ -5,7 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func listen(filename string) {
+func listen(filename string, done chan bool) {
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -34,11 +34,9 @@ func listen(filename string) {
 		}
 	}()
 
-	done := make(chan bool)
-
 	err = watcher.Add(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
-	<-done
+	done <- true
 }
