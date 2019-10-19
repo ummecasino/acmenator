@@ -9,4 +9,5 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	golang.org/x/sys v0.0.0-20191010194322-b09406accb47 // indirect
 	gotest.tools v2.2.0+incompatible
+	software.sslmate.com/src/go-pkcs12 v0.0.0-20190322163127-6e380ad96778
 )
