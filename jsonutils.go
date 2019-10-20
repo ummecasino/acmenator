@@ -64,7 +64,11 @@ func parseJSON(input []byte, jsonContent *acme) error {
 			log.Error("Error during JSON unmarshalling!")
 			return err
 		}
-		decodeKeyPairs(jsonContent)
+
+		for i := range jsonContent.Letsencrypt.Certs {
+			decodeKeyPairs(&jsonContent.Letsencrypt.Certs[i])
+		}
+
 	}
 	return nil
 }
@@ -74,23 +78,21 @@ func isJSON(input []byte) bool {
 	return json.Unmarshal(input, &js) == nil
 }
 
-func decodeKeyPairs(content *acme) error {
+func decodeKeyPairs(decodedCert *cert) error {
 	var key, cert []byte
 	var err error
 
-	for _, c := range content.Letsencrypt.Certs {
-
-		if key, err = b64.StdEncoding.DecodeString(c.Key); err != nil {
-			log.Error("Couldn't decode key: ", err)
-			return err
-		}
-		if cert, err = b64.StdEncoding.DecodeString(string(c.Certificate)); err != nil {
-			log.Error("Couldn't decode certificate: ", err)
-			return err
-		}
-
-		c.Key = string(key)
-		c.Certificate = string(cert)
+	if key, err = b64.StdEncoding.DecodeString(decodedCert.Key); err != nil {
+		log.Error("Couldn't decode key: ", err)
+		return err
 	}
+	if cert, err = b64.StdEncoding.DecodeString(string(decodedCert.Certificate)); err != nil {
+		log.Error("Couldn't decode certificate: ", err)
+		return err
+	}
+
+	decodedCert.Key = string(key)
+	decodedCert.Certificate = string(cert)
+
 	return nil
 }
