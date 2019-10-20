@@ -1,3 +1,5 @@
+sudo: required
+
 language: go
 
 go:
@@ -5,14 +7,32 @@ go:
   - tip
 
 git:
-  depth: 1
+  depth: false
 
-before_script:
+services: 
+  - docker
+
+before_install:
   - go install github.com/golangci/golangci-lint/cmd/golangci-lint
 
 script:
   - golangci-lint run
   - go test -v -race -coverprofile=coverage.txt -covermode=atomic
+  - docker build --no-cache -t ${TRAVIS_REPO_SLUG}:${TRAVIS_COMMIT} .
+  - docker run ${TRAVIS_REPO_SLUG}:${TRAVIS_COMMIT} -help
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+before_deploy:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - git_sha="$(git rev-parse --short HEAD)"
+  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:latest"
+  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${git_sha}"
+
+deploy:
+  provider: script
+  script: docker push "${IMAGE_NAME}:latest" && docker push "${IMAGE_NAME}:${git_sha}"
+  on:
+    branch: master
+
