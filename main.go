@@ -13,6 +13,7 @@ type RunArgsStruct struct {
 	ProducePEM   bool
 	ProducePKCS  bool
 	PKCSPassword string
+	Oneshot      bool
 }
 
 // RunArgs ...
@@ -29,6 +30,7 @@ func main() {
 	flag.BoolVar(&RunArgs.ProducePEM, "pem", false, "Produce a PEM key/cert pair")
 	flag.BoolVar(&RunArgs.ProducePKCS, "pkcs", false, "Produce a PKCS12 keystore")
 	flag.StringVar(&RunArgs.PKCSPassword, "p", "changeit", "Password fpr the PKCS keystore")
+	flag.BoolVar(&RunArgs.Oneshot, "oneshot", false, "Only do a single conversion")
 	flag.Parse()
 
 	if _, err := os.Stat(RunArgs.SourceFile); err == nil {
@@ -41,7 +43,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	done := make(chan bool)
+	var done chan bool
+	if RunArgs.Oneshot {
+		done = make(chan bool, 1)
+	} else {
+		done = make(chan bool)
+	}
+
 	listen(RunArgs.SourceFile, done)
 	<-done
 
