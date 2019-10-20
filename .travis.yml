@@ -19,7 +19,7 @@ script:
   - golangci-lint run
   - go test -v -race -coverprofile=coverage.txt -covermode=atomic
   - docker build --no-cache -t $TRAVIS_REPO_SLUG:$TRAVIS_COMMIT .
-  - docker run $TRAVIS_REPO_SLUG:$TRAVIS_COMMIT -help
+#  - docker run $TRAVIS_REPO_SLUG:$TRAVIS_COMMIT -help
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
