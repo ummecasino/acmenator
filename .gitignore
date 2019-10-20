@@ -10,3 +10,9 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+# Testdata
+*.crt
+*.key
+*.pkcs12
+*.html

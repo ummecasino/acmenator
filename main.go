@@ -7,13 +7,17 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Args ...
-type Args struct {
+// RunArgsStruct ...
+type RunArgsStruct struct {
 	SourceFile   string
 	ProducePEM   bool
 	ProducePKCS  bool
 	PKCSPassword string
+	Oneshot      bool
 }
+
+// RunArgs ...
+var RunArgs RunArgsStruct = RunArgsStruct{}
 
 func init() {
 	log.SetOutput(os.Stdout)
@@ -22,26 +26,31 @@ func init() {
 
 func main() {
 
-	var args = Args{}
-
-	flag.StringVar(&args.SourceFile, "source", "acme.json", "The JSON source produced by Traefik")
-	flag.BoolVar(&args.ProducePEM, "pem", false, "Produce a PEM key/cert pair")
-	flag.BoolVar(&args.ProducePKCS, "pkcs", false, "Produce a PKCS12 keystore")
-	flag.StringVar(&args.PKCSPassword, "p", "changeit", "Password fpr the PKCS keystore")
+	flag.StringVar(&RunArgs.SourceFile, "source", "acme.json", "The JSON source produced by Traefik")
+	flag.BoolVar(&RunArgs.ProducePEM, "pem", false, "Produce a PEM key/cert pair")
+	flag.BoolVar(&RunArgs.ProducePKCS, "pkcs", false, "Produce a PKCS12 keystore")
+	flag.StringVar(&RunArgs.PKCSPassword, "p", "changeit", "Password fpr the PKCS keystore")
+	flag.BoolVar(&RunArgs.Oneshot, "oneshot", false, "Only do a single conversion")
 	flag.Parse()
 
-	if _, err := os.Stat(args.SourceFile); err == nil {
-		log.Debug("Found " + args.SourceFile + "...")
+	if _, err := os.Stat(RunArgs.SourceFile); err == nil {
+		log.Debug("Found " + RunArgs.SourceFile + "...")
 	} else if os.IsNotExist(err) {
-		log.Fatal(args.SourceFile + " does not exist, exiting!")
+		log.Fatal(RunArgs.SourceFile + " does not exist, exiting!")
 		os.Exit(1)
 	} else {
 		log.Fatal("Something went wrong, exiting")
 		os.Exit(1)
 	}
 
-	done := make(chan bool, 1)
-	listen(args.SourceFile, done)
+	var done chan bool
+	if RunArgs.Oneshot {
+		done = make(chan bool, 1)
+	} else {
+		done = make(chan bool)
+	}
+
+	listen(RunArgs.SourceFile, done)
 	<-done
 
 }
