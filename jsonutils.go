@@ -49,7 +49,9 @@ func parseJSON(input []byte, jsonContent *acme) error {
 		}
 
 		for i := range jsonContent.Letsencrypt.Certs {
-			decodeKeyPairs(&jsonContent.Letsencrypt.Certs[i])
+			if err := decodeKeyPairs(&jsonContent.Letsencrypt.Certs[i]); err != nil {
+				return err
+			}
 		}
 
 	}
