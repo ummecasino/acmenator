@@ -17,18 +17,18 @@ before_install:
 script:
   - golangci-lint run
   - go test -v -race -coverprofile=coverage.txt -covermode=atomic
-  - docker build --no-cache -t $TRAVIS_REPO_SLUG:$TRAVIS_COMMIT .
+  - docker build --no-cache -t $TRAVIS_REPO_SLUG .
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
 before_deploy:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - docker tag $IMAGE_NAME $IMAGE_NAME:latest
+  - docker tag $TRAVIS_REPO_SLUG $TRAVIS_REPO_SLUG:latest
 
 deploy:
   provider: script
-  script: docker push $IMAGE_NAME:latest
+  script: docker push $TRAVIS_REPO_SLUG:latest
   on:
     branch: master
 
