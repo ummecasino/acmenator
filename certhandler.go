@@ -11,24 +11,29 @@ import (
 	"software.sslmate.com/src/go-pkcs12"
 )
 
-func storePemFiles(certs acme) error {
+func storePemFiles(cert cert) error {
+	domain := cert.Domain.Main
+	keyBytes := []byte(cert.Key)
+	certBytes := []byte(cert.Certificate)
 
-	for _, c := range certs.Letsencrypt.Certs {
-		log.Info("Working on " + c.Domain.Main)
+	log.Info("Working on " + domain)
 
-		if err := ioutil.WriteFile(c.Domain.Main+".key", []byte(c.Key), 0600); err != nil {
-			log.Error("Couldn't write " + c.Domain.Main + ".key")
-		}
+	if err := ioutil.WriteFile(domain+".key", keyBytes, 0600); err != nil {
+		log.Error("Couldn't write " + domain + ".key")
+	}
 
-		if err := ioutil.WriteFile(c.Domain.Main+".cert", []byte(c.Certificate), 0600); err != nil {
-			log.Error("Couldn't write " + c.Domain.Main + ".cert")
-		}
+	if err := ioutil.WriteFile(domain+".cert", certBytes, 0600); err != nil {
+		log.Error("Couldn't write " + domain + ".cert")
 	}
 
 	return nil
 }
 
-func storePKCS(domain string, key []byte, cert []byte) error {
+func storePKCS(cert cert) error {
+	domain := cert.Domain.Main
+	keyBytes := []byte(cert.Key)
+	certBytes := []byte(cert.Certificate)
+
 	var err error
 	var rsaKey interface{}
 	var pfxData []byte
@@ -36,18 +41,18 @@ func storePKCS(domain string, key []byte, cert []byte) error {
 
 	reader := rand.Reader
 
-	rsaKey, err = parseRsaKey(key)
+	rsaKey, err = parseRsaKey(keyBytes)
 	if rsaKey == nil {
 		log.Error("Error generating RSA key: ", err)
 		return err
 	}
 
-	x509Cert, err = parsex509Certificate(cert)
+	x509Cert, err = parsex509Certificate(certBytes)
 	if err != nil {
 		return err
 	}
 
-	if pfxData, err = pkcs12.Encode(reader, rsaKey, &x509Cert, nil, "changeit"); err != nil {
+	if pfxData, err = pkcs12.Encode(reader, rsaKey, &x509Cert, nil, RunArgs.PKCSPassword); err != nil {
 		log.Error("could not create pfx data ", err)
 		return err
 	}
@@ -81,8 +86,8 @@ func parseRsaKey(key []byte) (interface{}, error) {
 }
 
 func parsex509Certificate(certPEM []byte) (x509.Certificate, error) {
-
 	var certificate x509.Certificate
+
 	block, _ := pem.Decode(certPEM)
 	if block == nil {
 		log.Error("failed to decode certificate PEM")

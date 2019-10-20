@@ -26,23 +26,6 @@ type domain struct {
 	Main string `json:"main"`
 }
 
-func ProcessFileChange(filename string) {
-	var content []byte
-	var err error
-	jsonContent := acme{}
-
-	content, err = readJSONFile(filename)
-	if err != nil {
-		log.Error("Wasn't able to read input file", err)
-		return
-	}
-
-	if err = parseJSON(content, &jsonContent); err != nil {
-		log.Error("Wasn't able to parse JSON", err)
-		return
-	}
-}
-
 func readJSONFile(filename string) ([]byte, error) {
 	file, err := os.Open(filename)
 
