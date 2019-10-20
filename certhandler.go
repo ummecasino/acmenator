@@ -22,8 +22,8 @@ func storePemFiles(cert cert) error {
 		log.Error("Couldn't write " + domain + ".key")
 	}
 
-	if err := ioutil.WriteFile(domain+".cert", certBytes, 0600); err != nil {
-		log.Error("Couldn't write " + domain + ".cert")
+	if err := ioutil.WriteFile(domain+".crt", certBytes, 0600); err != nil {
+		log.Error("Couldn't write " + domain + ".crt")
 	}
 
 	return nil

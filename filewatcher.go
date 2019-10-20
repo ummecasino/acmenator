@@ -16,6 +16,11 @@ func listen(filename string, done chan bool) {
 		log.Fatal(err)
 	}
 
+	err = watcher.Add(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	defer watcher.Close()
 
 	go func() {
@@ -39,10 +44,6 @@ func listen(filename string, done chan bool) {
 		}
 	}()
 
-	err = watcher.Add(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
 	done <- true
 }
 

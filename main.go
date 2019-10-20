@@ -41,7 +41,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	done := make(chan bool, 1)
+	done := make(chan bool)
 	listen(RunArgs.SourceFile, done)
 	<-done
 
