@@ -17,6 +17,9 @@ before_install:
 script:
   - golangci-lint run
   - go test -v -race -coverprofile=coverage.txt -covermode=atomic
+  - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 
+    go build -a -tags netgo -ldflags '-w -extldflags "-static"' 
+    -o target/acmenator .
   - docker build --no-cache -t $TRAVIS_REPO_SLUG .
 
 after_success:

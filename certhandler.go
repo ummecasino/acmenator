@@ -6,40 +6,46 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
+	"path/filepath"
+
+	log "github.com/sirupsen/logrus"
 	"software.sslmate.com/src/go-pkcs12"
 )
 
-func storePemFiles(cert cert) error {
+func storePemFiles(cert cert, dir string) error {
 	domain := cert.Domain.Main
 	keyBytes := []byte(cert.Key)
 	certBytes := []byte(cert.Certificate)
 
 	log.Info("Working on " + domain)
+	pathKey := filepath.Join(dir, domain+".key")
+	pathCert := filepath.Join(dir, domain+".pem")
 
-	if err := ioutil.WriteFile(domain+".key", keyBytes, 0600); err != nil {
-		log.Error("Couldn't write " + domain + ".key")
+	if err := ioutil.WriteFile(pathKey, keyBytes, 0600); err != nil {
+		log.Error("Couldn't write "+pathKey, err)
+		return err
 	}
 
-	if err := ioutil.WriteFile(domain+".crt", certBytes, 0600); err != nil {
-		log.Error("Couldn't write " + domain + ".crt")
+	if err := ioutil.WriteFile(pathCert, certBytes, 0600); err != nil {
+		log.Error("Couldn't write "+pathCert, err)
+		return err
 	}
 
 	return nil
 }
 
-func storePKCS(cert cert) error {
+func storePKCS(cert cert, dir string) error {
 	domain := cert.Domain.Main
 	keyBytes := []byte(cert.Key)
 	certBytes := []byte(cert.Certificate)
+	pkcsPath := filepath.Join(dir, domain+".pkcs12")
+	reader := rand.Reader
 
 	var err error
 	var rsaKey interface{}
 	var pfxData []byte
 	var x509Cert x509.Certificate
-
-	reader := rand.Reader
 
 	rsaKey, err = parseRsaKey(keyBytes)
 	if rsaKey == nil {
@@ -49,6 +55,7 @@ func storePKCS(cert cert) error {
 
 	x509Cert, err = parsex509Certificate(certBytes)
 	if err != nil {
+		log.Error("Error generating x509 cert: ", err)
 		return err
 	}
 
@@ -57,8 +64,9 @@ func storePKCS(cert cert) error {
 		return err
 	}
 
-	if err := ioutil.WriteFile(domain+".pkcs12", pfxData, 0600); err != nil {
-		log.Error("Couldn't write " + domain + ".pkcs12")
+	if err := ioutil.WriteFile(pkcsPath, pfxData, 0600); err != nil {
+		log.Error("Couldn't write "+pkcsPath, err)
+		return err
 	}
 
 	return nil

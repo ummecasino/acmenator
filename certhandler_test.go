@@ -2,11 +2,12 @@ package main
 
 import (
 	"crypto/rsa"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestStorePemFiles(t *testing.T) {
@@ -22,7 +23,7 @@ func TestStorePemFiles(t *testing.T) {
 	}
 
 	for _, cert := range acme.Letsencrypt.Certs {
-		if err := storePemFiles(cert); err != nil {
+		if err := storePemFiles(cert, "testdata"); err != nil {
 			t.Failed()
 		}
 	}
@@ -41,7 +42,7 @@ func TestStorePKCS(t *testing.T) {
 	}
 
 	for _, cert := range acme.Letsencrypt.Certs {
-		if err := storePKCS(cert); err != nil {
+		if err := storePKCS(cert, "testdata"); err != nil {
 			t.Failed()
 		}
 	}

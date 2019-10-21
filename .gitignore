@@ -14,5 +14,8 @@
 # Testdata
 *.crt
 *.key
+*.pem
 *.pkcs12
 *.html
+*.txt
+acmenator
