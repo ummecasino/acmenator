@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/ummecasino/acmenator.svg?branch=master)](https://travis-ci.org/ummecasino/acmenator)
 [![Code Coverage](https://codecov.io/gh/ummecasino/acmenator/branch/master/graph/badge.svg)](https://codecov.io/gh/ummecasino/acmenator)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2ffa857ebafc4aca8a502cda4abca49a)](https://www.codacy.com/manual/ummecasino/acmenator?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ummecasino/acmenator&amp;utm_campaign=Badge_Grade)
 
 # acmenator
 
