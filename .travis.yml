@@ -3,6 +3,10 @@ language: go
 go:
   - 1.13.x
 
+env:
+  global:
+    - VERSION=$TRAVIS_TAG
+
 git:
   depth: false
 
@@ -19,10 +23,10 @@ after_success:
 before_deploy:
   - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 
     go build -a -tags netgo -ldflags '-w -extldflags "-static"' 
-    -o target/acmenator_$TRAVIS_TAG_linux_amd64 .
+    -o target/acmenator_${VERSION}_linux_amd64 .
   - CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 
     go build -a -tags netgo -ldflags '-w -extldflags "-static"' 
-    -o target/acmenator_$TRAVIS_TAG_darwin_amd64 .
+    -o target/acmenator_${VERSION}_darwin_amd64 .
 
 deploy:
   provider: releases
