@@ -12,10 +12,23 @@ before_install:
 script:
   - golangci-lint run
   - go test -v -race -coverprofile=coverage.txt -covermode=atomic
-  - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 
-    go build -a -tags netgo -ldflags '-w -extldflags "-static"' 
-    -o target/acmenator .
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 
+before_deploy:
+  - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 
+    go build -a -tags netgo -ldflags '-w -extldflags "-static"' 
+    -o target/acmenator_$TRAVIS_TAG_linux_amd64 .
+  - CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 
+    go build -a -tags netgo -ldflags '-w -extldflags "-static"' 
+    -o target/acmenator_$TRAVIS_TAG_darwin_amd64 .
+
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  file_glob: true
+  file: target/*
+  skip_cleanup: true
+  on:
+    tags: true
