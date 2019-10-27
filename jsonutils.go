@@ -9,7 +9,8 @@ import (
 )
 
 type acme struct {
-	Letsencrypt letsencrypt `json:"letsencrypt"`
+	Letsencrypt letsencrypt `json:"letsencrypt"`  // Acme v2
+	Certs       []cert      `json:"Certificates"` // Acme v1
 }
 
 type letsencrypt struct {
@@ -42,25 +43,22 @@ func readJSONFile(filename string) ([]byte, error) {
 }
 
 func parseJSON(input []byte, jsonContent *acme) error {
-	if isJSON(input) {
-		if err := json.Unmarshal(input, &jsonContent); err != nil {
-			log.Error("Error during JSON unmarshalling!")
-			return err
-		}
-
-		for i := range jsonContent.Letsencrypt.Certs {
-			if err := decodeKeyPairs(&jsonContent.Letsencrypt.Certs[i]); err != nil {
-				return err
-			}
-		}
-
+	if err := isJSON(input); err != nil {
+		log.Error("Could not parse JSON ")
+		return err
 	}
+
+	if err := json.Unmarshal(input, &jsonContent); err != nil {
+		log.Error("Error during JSON unmarshalling!")
+		return err
+	}
+
 	return nil
 }
 
-func isJSON(input []byte) bool {
+func isJSON(input []byte) error {
 	var js map[string]interface{}
-	return json.Unmarshal(input, &js) == nil
+	return json.Unmarshal(input, &js)
 }
 
 func decodeKeyPairs(decodedCert *cert) error {
