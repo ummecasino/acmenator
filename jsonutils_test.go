@@ -3,34 +3,30 @@ package main
 import (
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
+	"math"
 	"path/filepath"
 	"testing"
 )
 
 func TestParseJSON(t *testing.T) {
+	testJSONProcessing(t, filepath.Join("testdata", "acme_v1.golden"))
+	testJSONProcessing(t, filepath.Join("testdata", "acme_v2.golden"))
+}
 
-	content, err := ioutil.ReadFile(filepath.Join("testdata", "acme.golden"))
+func testJSONProcessing(t *testing.T, filename string) {
+	content, err := ioutil.ReadFile(filename)
 	if err != nil {
-		t.Failed()
+		t.Log(err)
+		t.Fail()
 	}
 
 	certs := acme{}
 
 	if err := parseJSON(content, &certs); err == nil {
-
-		for _, cert := range certs.Letsencrypt.Certs {
-			print("Key: " + cert.Key)
-			println()
-			print("Cert: " + cert.Certificate)
-		}
-
-		//	assert.Equal(t, certs.Letsencrypt.Certs[0].Domain.Main, "baz.foo.bar")
-		//	assert.Equal(t, certs.Letsencrypt.Certs[0].Certificate, "cert")
-		//	assert.Equal(t, certs.Letsencrypt.Certs[0].Key, "key")
+		assert.Equal(t, 2., math.Abs(float64(len(certs.Certs)-len(certs.Letsencrypt.Certs))))
 	} else {
 		t.Failed()
 	}
-
 }
 
 func TestDecodeKeyPairs(t *testing.T) {

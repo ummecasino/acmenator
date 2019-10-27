@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"os"
+	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -54,6 +55,8 @@ func main() {
 	initLogger(RunArgs.Debug)
 	paramOK(RunArgs.SourceFile)
 	paramOK(RunArgs.TargetDir)
+	RunArgs.SourceFile, _ = filepath.Abs(RunArgs.SourceFile)
+	RunArgs.TargetDir, _ = filepath.Abs(RunArgs.TargetDir)
 
 	var done chan bool
 	if RunArgs.Watch {
@@ -69,7 +72,7 @@ func main() {
 
 func paramOK(path string) {
 	if _, err := os.Stat(path); err == nil {
-		log.Debug("Found " + path + "...")
+		log.Debug("Found " + path)
 	} else if os.IsNotExist(err) {
 		log.Fatal(path + " does not exist!")
 	} else {

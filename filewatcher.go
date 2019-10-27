@@ -63,18 +63,46 @@ func processFileChange(filename string) {
 		return
 	}
 
-	for _, cert := range jsonContent.Letsencrypt.Certs {
-		if RunArgs.ProducePEM {
-			if err := storePemFiles(cert, RunArgs.TargetDir); err != nil {
-				log.Error("Error during PEM saving")
+	log.Debugf("Parsed %s", filename)
+	log.Debugf("Lenght of jsonContent.Certs: %d", len(jsonContent.Certs))
+	log.Debugf("Lenght of jsonContent.Letsencrypt.Certs: %d", len(jsonContent.Letsencrypt.Certs))
+
+	if len(jsonContent.Certs) > 0 && len(jsonContent.Letsencrypt.Certs) == 0 {
+
+		log.Debug("Found a v1 JSON")
+		for i := range jsonContent.Certs {
+			if err := decodeKeyPairs(&jsonContent.Certs[i]); err != nil {
+				log.Error(err)
+				return
 			}
+			processCert(jsonContent.Certs[i])
 		}
 
-		if RunArgs.ProducePKCS {
-			if err := storePKCS(cert, RunArgs.TargetDir); err != nil {
-				log.Error("Error during PKCS saving")
+	} else if len(jsonContent.Letsencrypt.Certs) > 0 && len(jsonContent.Certs) == 0 {
+
+		log.Debug("Found a v2 JSON")
+		for i := range jsonContent.Letsencrypt.Certs {
+			if err := decodeKeyPairs(&jsonContent.Letsencrypt.Certs[i]); err != nil {
+				log.Error(err)
+				return
 			}
+			processCert(jsonContent.Letsencrypt.Certs[i])
+		}
+
+	} else {
+		log.Warn("Did not find any certificates to process")
+	}
+}
+
+func processCert(cert cert) {
+	if RunArgs.ProducePEM {
+		if err := storePemFiles(cert, RunArgs.TargetDir); err != nil {
+			log.Error("Error during PEM saving")
 		}
 	}
-
+	if RunArgs.ProducePKCS {
+		if err := storePKCS(cert, RunArgs.TargetDir); err != nil {
+			log.Error("Error during PKCS saving")
+		}
+	}
 }
