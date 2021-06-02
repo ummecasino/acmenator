@@ -64,10 +64,11 @@ func processFileChange(filename string) {
 	}
 
 	log.Debugf("Parsed %s", filename)
-	log.Debugf("Lenght of jsonContent.Certs: %d", len(jsonContent.Certs))
-	log.Debugf("Lenght of jsonContent.Letsencrypt.Certs: %d", len(jsonContent.Letsencrypt.Certs))
+	log.Debugf("Length of jsonContent.Certs: %d", len(jsonContent.Certs))
 
-	if len(jsonContent.Certs) > 0 && len(jsonContent.Letsencrypt.Certs) == 0 {
+	log.Debugf("Length of jsonContent.Letsencrypt: %d", len(jsonContent.Letsencrypt))
+
+	if len(jsonContent.Certs) > 0 && len(jsonContent.Letsencrypt) == 0 {
 
 		log.Debug("Found a v1 JSON")
 		for i := range jsonContent.Certs {
@@ -78,15 +79,17 @@ func processFileChange(filename string) {
 			processCert(jsonContent.Certs[i])
 		}
 
-	} else if len(jsonContent.Letsencrypt.Certs) > 0 && len(jsonContent.Certs) == 0 {
+	} else if len(jsonContent.Letsencrypt) > 0 && len(jsonContent.Certs) == 0 {
 
 		log.Debug("Found a v2 JSON")
-		for i := range jsonContent.Letsencrypt.Certs {
-			if err := decodeKeyPairs(&jsonContent.Letsencrypt.Certs[i]); err != nil {
-				log.Error(err)
-				return
+		for i := range jsonContent.Letsencrypt {
+			for j := range jsonContent.Letsencrypt[i].Certs {
+				if err := decodeKeyPairs(&jsonContent.Letsencrypt[i].Certs[j]); err != nil {
+					log.Error(err)
+					return
+				}
+				processCert(jsonContent.Letsencrypt[i].Certs[j])
 			}
-			processCert(jsonContent.Letsencrypt.Certs[i])
 		}
 
 	} else {
